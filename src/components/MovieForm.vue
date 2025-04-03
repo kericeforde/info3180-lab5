@@ -65,14 +65,15 @@
   
  
   function saveMovie() {
-    let fData = new FormData();
-    fData.append("title", title.value);
-    fData.append("description", description.value);
-    fData.append("poster", poster.value);
+    let form = document.getElementById("movieForm");
+    let form_data = new FormData(form);
+    form_data.append("title", title.value);
+    form_data.append("description", description.value);
+    form_data.append("poster", poster.value);
   
     fetch("/api/v1/movies", {
       method: 'POST',
-      body: fData,
+      body: form_data,
       headers: {
         'X-CSRFToken': csrf_token.value
       }
@@ -80,7 +81,7 @@
     .then(response => response.json())
     .then(data => {
       if (data.errors) {
-        errors.value = Object.values(data.errors).flat(); // Convert error object to array
+        errors.value = Object.values(data.errors).flat(); 
         message.value = "";
       } else {
         message.value = data.message;

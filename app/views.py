@@ -6,11 +6,12 @@ This file creates your application.
 """
 
 from app import app,db
-from flask import render_template, request, jsonify, send_file
+from flask import render_template, request, jsonify, send_file,send_from_directory
 import os
 from app.forms import MovieForm
 from app.models import  Movie
 from werkzeug.utils import secure_filename 
+from flask_wtf.csrf import generate_csrf
 
 
 ###
@@ -21,7 +22,11 @@ from werkzeug.utils import secure_filename
 def index():
     return jsonify(message="This is the beginning of our API")
 
-@app.route('/api/v1/movies',method=['POST'])
+@app.route('/api/v1/csrf-token', methods=['GET'])
+def get_csrf():
+    return jsonify({'csrf_token': generate_csrf()})
+
+@app.route('/api/v1/movies',methods=['POST'])
 def movies():
     form=MovieForm()
 
@@ -35,7 +40,7 @@ def movies():
         path = os.path.join(app.config['UPLOAD_FOLDER'],name)  
         poster.save(path)
 
-        movie=Movie(title,description,name)
+        movie=Movie(title=title, description=description, poster=name)
         db.session.add(movie)
         db.session.commit()
         return jsonify( { 
@@ -44,7 +49,27 @@ def movies():
             "poster": name, 
             "description": description}), 201
     return jsonify({"errors": form_errors(form)}),400
-        
+
+
+
+@app.route("/api/v1/posters/<filename>")
+def getposter(filename):
+   return send_from_directory(os.path.join(os.getcwd(), app.config["UPLOAD_FOLDER"]), filename)
+
+
+@app.route("/api/v1/movies", methods=["GET"])
+def getmovies():
+    movies = Movie.query.all()
+    movieList=[]
+    for movie in movies:
+         movieList.append(
+        {
+            "id": movie.id,
+            "title": movie.title,
+            "description": movie.description,
+            "poster": f"/api/v1/posters/{movie.poster}",
+        })
+    return jsonify({"movies": movieList})
 
 
 

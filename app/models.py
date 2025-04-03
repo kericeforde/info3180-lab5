@@ -1,5 +1,6 @@
-from app import db
-
+from . import db
+from datetime import datetime
+from flask_sqlalchemy import SQLAlchemy
 
 class Movie(db.Model):
     #Table name
@@ -7,9 +8,9 @@ class Movie(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(80))
-    description = db.Column(db.String(255))
+    description = db.Column(db.Text)
     poster =db.Column(db.String(80))
-    created_at =db.Column(db.Datetime)
+    created_at =db.Column(db.DateTime, default=datetime.now())
 
     def __init__(self, title,description,poster):
         self.title=title
